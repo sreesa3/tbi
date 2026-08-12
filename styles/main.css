@@ -193,6 +193,18 @@ a:hover {
   margin-bottom: 0.75rem;
 }
 
+.hero__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem 3rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.hero__copy h1 {
+  margin-bottom: 0;
+}
+
 .hero h1 {
   font-family: var(--font-display);
   font-size: clamp(1.85rem, 4.5vw, 2.75rem);
@@ -202,6 +214,38 @@ a:hover {
   line-height: 1.2;
   margin: 0 0 1rem;
   max-width: 18ch;
+}
+
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(6.5rem, 1fr));
+  gap: 1rem 1.75rem;
+  padding-left: 1.75rem;
+  border-left: 2px solid rgba(255, 249, 0, 0.35);
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hero-stat__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--yellow);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-stat__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  line-height: 1.3;
 }
 
 .hero__lead {
@@ -372,6 +416,14 @@ a:hover {
   object-fit: contain;
 }
 
+.affil__logo--startuptn,
+.affil__logo--startup-india {
+  width: auto;
+  max-width: 100%;
+  height: 72px;
+  margin: -8px 0 -8px;
+}
+
 .affil h3 {
   font-family: var(--font-display);
   font-size: 1rem;
@@ -403,6 +455,29 @@ a:hover {
   grid-template-columns: 1.4fr 1fr;
   gap: 2rem;
   align-items: start;
+}
+
+@media (max-width: 768px) {
+  .hero__intro {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  .hero__stats {
+    width: 100%;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 2px solid rgba(255, 249, 0, 0.35);
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero__stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 768px) {

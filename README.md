@@ -21,7 +21,10 @@ index.html
 styles/main.css
 scripts/main.js
 assets/logos/scsvmv-logo.png   # official university seal
-assets/logos/                  # MSME/EDII/StartupTN/Startup India still placeholders
+assets/logos/msme.png            # Ministry of MSME
+assets/logos/edii.png            # EDII Tamil Nadu (editn.in)
+assets/logos/startuptn.png       # StartupTN (official logo, transparent background)
+assets/logos/startup-india.png   # Startup India (uxdt.nic.in)
 README.md
 ```
 
@@ -31,14 +34,14 @@ README.md
 2. Upload `assets/` to the media library (or a `/tbi/` folder on the server).
 3. Paste sections into Elementor **HTML** widgets, updating image paths to the uploaded URLs **or** host the whole folder as a subdirectory and link from the menu.
 4. Point **Apply** to the live application form URL.
-5. Replace placeholder logos with official MSME, EDII, StartupTN, and Startup India artwork.
+5. Affiliation logos are included under `assets/logos/` (MSME, EDII, StartupTN, Startup India).
 
 ## Asset checklist
 
-- [ ] Official MSME logo
-- [ ] Official EDII logo
-- [ ] Official StartupTN logo
-- [ ] Official Startup India logo
+- [x] Official MSME logo
+- [x] Official EDII logo
+- [x] Official StartupTN logo
+- [x] Official Startup India logo
 - [ ] Optional campus / TBI photos for the hero or projects section
 - [ ] Confirm EDII grant programme name (e.g. TIDE / other) for final copy
 
