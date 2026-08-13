@@ -7,45 +7,6 @@
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function animateCounters() {
-    var nodes = document.querySelectorAll("[data-count]");
-    if (!nodes.length) return;
-
-    nodes.forEach(function (el, index) {
-      var target = parseInt(el.getAttribute("data-count"), 10);
-      var suffix = el.getAttribute("data-suffix") || "";
-      var prefix = el.getAttribute("data-prefix") || "";
-      var duration = parseInt(el.getAttribute("data-duration") || "1800", 10);
-      var delay = parseInt(el.getAttribute("data-delay") || String(index * 120), 10);
-
-      if (isNaN(target)) return;
-
-      if (reduceMotion) {
-        el.textContent = prefix + target + suffix;
-        return;
-      }
-
-      window.setTimeout(function () {
-        var start = performance.now();
-
-        function tick(now) {
-          var progress = Math.min((now - start) / duration, 1);
-          var eased = 1 - Math.pow(1 - progress, 3);
-          var current = Math.round(eased * target);
-          el.textContent = prefix + current + suffix;
-
-          if (progress < 1) {
-            window.requestAnimationFrame(tick);
-          } else {
-            el.textContent = prefix + target + suffix;
-          }
-        }
-
-        window.requestAnimationFrame(tick);
-      }, delay);
-    });
-  }
-
   function revealOnScroll() {
     var nodes = document.querySelectorAll(".reveal");
     if (!nodes.length) return;
@@ -86,12 +47,10 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
-      animateCounters();
       revealOnScroll();
       hardenExternalAnchors();
     });
   } else {
-    animateCounters();
     revealOnScroll();
     hardenExternalAnchors();
   }
