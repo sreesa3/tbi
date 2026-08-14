@@ -1,18 +1,41 @@
 # SCSVMV Technology Business Incubator (TBI)
 
-Static landing page styled to match [kanchiuniv.ac.in](https://kanchiuniv.ac.in/) (Astra + Elementor brand: navy `#28245B`, red `#990102`, yellow `#FFF900`).
+Landing page plus a PHP incubatee application form (same fields as `assets/docs/application-form.pdf`). Stack: **HTML/CSS + PHP 8 + MySQL**, for Hostinger or A2 shared hosting.
 
 ## Preview locally
 
-```bash
-# Option A — open the file
-open index.html
+The home page is static. The application form needs PHP and MySQL.
 
-# Option B — static server
+```bash
+# Static preview of the landing page
 npx --yes serve -l 4173 .
+
+# Form (requires PHP + MySQL)
+cp config.sample.php config.php
+# edit config.php with local DB credentials
+mysql -u root -p tbi_apply < sql/schema.sql
+php -S localhost:4173
 ```
 
-Then visit `http://localhost:4173`.
+Then visit `http://localhost:4173` and `http://localhost:4173/apply/`.
+
+## Hostinger / A2 deploy
+
+1. Create a MySQL database and user in hPanel or cPanel.
+2. Import `sql/schema.sql` (phpMyAdmin).
+3. Upload all files to `public_html` (or a subdomain document root).
+4. Copy `config.sample.php` to `config.php` on the server. Set:
+   - `db.host` (usually `localhost`)
+   - `db.name`, `db.user`, `db.pass`
+   - `admin_password` (for `/admin/`)
+   - `notify_email` / `from_email`
+5. Confirm PHP 8.x and raise `upload_max_filesize` / `post_max_size` if needed (photo 2 MB, write-up 5 MB).
+6. Enable HTTPS.
+7. Keep `config.php` off git. `uploads/` is blocked from direct web access.
+
+Admin list: `https://your-domain/admin/` (password from `config.php`).
+
+PAN and Aadhaar are **not** collected on the form.
 
 ## Structure
 
@@ -45,11 +68,9 @@ README.md
 - [ ] Optional campus / TBI photos for the hero or projects section
 - [ ] Confirm EDII grant programme name (e.g. TIDE / other) for final copy
 
-## Security notes (v1)
+## Security notes
 
-- Static HTML only — no backend, login, or data collection on this page.
 - External links use `rel="noopener noreferrer"` and `https://`.
-- JS does not use `innerHTML` and makes no network requests.
-- Sensitive documents (PAN/Aadhaar) are listed as checklist items only; visitors are told to use official channels.
-- Prefer university CSP / HSTS already on kanchiuniv; if hosting as files, set `X-Content-Type-Options: nosniff`.
-- Optional later: self-host Noto Serif + Poppins instead of Google Fonts.
+- Form uses CSRF token, honeypot, prepared statements, file type/size checks, and IP rate limiting.
+- PAN/Aadhaar are not accepted on the website.
+- Prefer CSP / HSTS on the host; this repo sets `X-Content-Type-Options: nosniff` via `.htaccess`.
