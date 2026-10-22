@@ -257,6 +257,16 @@ try {
     fail('Could not save the application. Please try again later.', $old);
 }
 
+$pdfOk = false;
+try {
+    require_once dirname(__DIR__) . '/includes/generate_application_pdf.php';
+    tbi_generate_application_pdf($pdo, $appId);
+    $pdfOk = true;
+} catch (Throwable $e) {
+    // Application is already saved; PDF can be regenerated later from admin data.
+    $pdfOk = false;
+}
+
 $notify = (string) ($cfg['notify_email'] ?? '');
 if ($notify !== '' && filter_var($notify, FILTER_VALIDATE_EMAIL)) {
     $from = (string) ($cfg['from_email'] ?? $notify);
@@ -266,5 +276,7 @@ if ($notify !== '' && filter_var($notify, FILTER_VALIDATE_EMAIL)) {
 }
 
 $_SESSION['csrf'] = bin2hex(random_bytes(32));
+$_SESSION['last_application_id'] = $appId;
+$_SESSION['last_application_pdf'] = $pdfOk;
 header('Location: success.php');
 exit;

@@ -1,5 +1,11 @@
 <?php
 declare(strict_types=1);
+require dirname(__DIR__) . '/includes/app.php';
+tbi_start_session();
+
+$appId = (int) ($_SESSION['last_application_id'] ?? 0);
+$pdfOk = !empty($_SESSION['last_application_pdf']);
+$hasPdf = $pdfOk && $appId > 0 && is_readable(tbi_uploads_dir() . '/' . $appId . '/application.pdf');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +38,18 @@ declare(strict_types=1);
             unless TBI asks through official channels.
           </p>
         </header>
-        <a class="btn btn--solid" href="../index.html">Back to home</a>
+        <div class="cta-row">
+          <?php if ($hasPdf): ?>
+            <a class="btn btn--solid" href="download-pdf.php">Download filled application PDF</a>
+          <?php endif; ?>
+          <a class="btn btn--outline" href="../index.html">Back to home</a>
+        </div>
+        <?php if ($appId > 0 && !$hasPdf): ?>
+          <p class="note" style="margin-top: 1.25rem">
+            Your application was saved (ref #<?php echo $appId; ?>). The PDF could not be
+            generated automatically — TBI can still review your details in the admin panel.
+          </p>
+        <?php endif; ?>
       </div>
     </main>
   </body>

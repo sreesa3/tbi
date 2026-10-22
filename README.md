@@ -1,76 +1,104 @@
 # SCSVMV Technology Business Incubator (TBI)
 
-Landing page plus a PHP incubatee application form (same fields as `assets/docs/application-form.pdf`). Stack: **HTML/CSS + PHP 8 + MySQL**, for Hostinger or A2 shared hosting.
+Landing page plus a PHP incubatee application form. After submit, the site saves to MySQL and generates a **filled PDF** (same sections as `assets/docs/application-form.pdf`) for download.
+
+Stack: **HTML/CSS + PHP 8 + MySQL + Dompdf**, for Hostinger or A2 shared hosting.
+
+## Important
+
+- Keep the homepage as **`index.html`**. Do not put the apply form in a root `index.php` (hosts prefer `index.php` and would hide the landing page).
+- **Fill application** → [`apply/index.php`](apply/index.php)
+- `npx serve` only previews the static site; it cannot run PHP or build PDFs.
 
 ## Preview locally
 
-The home page is static. The application form needs PHP and MySQL.
+### Landing page only (static)
 
 ```bash
-# Static preview of the landing page
 npx --yes serve -l 4173 .
+```
 
-# Form (requires PHP + MySQL)
+Visit `http://localhost:4173`.
+
+### Form + PDF (PHP + MySQL)
+
+1. Install PHP 8+ and Composer on your machine (or use Hostinger to test).
+2. Create DB and import schema:
+
+```bash
 cp config.sample.php config.php
-# edit config.php with local DB credentials
+# edit config.php — db credentials, admin_password, notify_email
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS tbi_apply CHARACTER SET utf8mb4;"
 mysql -u root -p tbi_apply < sql/schema.sql
+```
+
+3. Install Dompdf:
+
+```bash
+composer install
+```
+
+4. Run PHP’s built-in server from the project root:
+
+```bash
 php -S localhost:4173
 ```
 
-Then visit `http://localhost:4173` and `http://localhost:4173/apply/`.
+5. Open `http://localhost:4173` → **Fill application** → submit → **Download filled application PDF**.
+
+Admin: `http://localhost:4173/admin/` (password from `config.php`).
 
 ## Hostinger / A2 deploy
 
 1. Create a MySQL database and user in hPanel or cPanel.
 2. Import `sql/schema.sql` (phpMyAdmin).
-3. Upload all files to `public_html` (or a subdomain document root).
-4. Copy `config.sample.php` to `config.php` on the server. Set:
+3. Upload project files to `public_html` (or a subdomain document root).
+4. On the server (SSH or local then upload `vendor/`):
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+5. Copy `config.sample.php` → `config.php` with:
    - `db.host` (usually `localhost`)
    - `db.name`, `db.user`, `db.pass`
-   - `admin_password` (for `/admin/`)
+   - `admin_password`
    - `notify_email` / `from_email`
-5. Confirm PHP 8.x and raise `upload_max_filesize` / `post_max_size` if needed (photo 2 MB, write-up 5 MB).
-6. Enable HTTPS.
-7. Keep `config.php` off git. `uploads/` is blocked from direct web access.
+6. PHP 8.x; raise `upload_max_filesize` / `post_max_size` if needed.
+7. Enable HTTPS.
+8. Keep `config.php` and `uploads/` off public listing (`uploads/.htaccess` blocks direct access).
 
-Admin list: `https://your-domain/admin/` (password from `config.php`).
+## Flow
 
-PAN and Aadhaar are **not** collected on the form.
+1. Visitor fills `apply/index.php`.
+2. `apply/submit.php` validates, saves MySQL, generates `uploads/{id}/application.pdf`.
+3. `apply/success.php` offers **Download filled application PDF** (`apply/download-pdf.php`).
+4. Blank official PDF remains available as **Download PDF**.
+
+PAN and Aadhaar are **not** collected on the form or in the generated PDF.
 
 ## Structure
 
 ```
-index.html
-styles/main.css
-scripts/main.js
-assets/logos/scsvmv-logo.png   # official university seal
-assets/logos/msme.png            # Ministry of MSME
-assets/logos/edii.png            # EDII Tamil Nadu (editn.in)
-assets/logos/startuptn.png       # StartupTN (official logo, transparent background)
-assets/logos/startup-india.png   # Startup India (uxdt.nic.in)
-README.md
+index.html                 # landing page (homepage)
+apply/index.php            # web form
+apply/submit.php           # save + generate PDF
+apply/success.php
+apply/download-pdf.php
+admin/                     # password-protected submissions
+includes/
+  app.php
+  generate_application_pdf.php
+  pdf_application_template.php
+sql/schema.sql
+composer.json              # dompdf/dompdf
+config.sample.php
+uploads/                   # private uploads + filled PDFs
 ```
-
-## WordPress handoff (kanchiuniv.ac.in)
-
-1. Create or update a page under Incubation (e.g. **Technology Business Incubator**).
-2. Upload `assets/` to the media library (or a `/tbi/` folder on the server).
-3. Paste sections into Elementor **HTML** widgets, updating image paths to the uploaded URLs **or** host the whole folder as a subdirectory and link from the menu.
-4. Point **Apply** to the live application form URL.
-5. Affiliation logos are included under `assets/logos/` (MSME, EDII, StartupTN, Startup India).
-
-## Asset checklist
-
-- [x] Official MSME logo
-- [x] Official EDII logo
-- [x] Official StartupTN logo
-- [x] Official Startup India logo
-- [ ] Optional campus / TBI photos for the hero or projects section
-- [ ] Confirm EDII grant programme name (e.g. TIDE / other) for final copy
 
 ## Security notes
 
 - External links use `rel="noopener noreferrer"` and `https://`.
 - Form uses CSRF token, honeypot, prepared statements, file type/size checks, and IP rate limiting.
-- PAN/Aadhaar are not accepted on the website.
-- Prefer CSP / HSTS on the host; this repo sets `X-Content-Type-Options: nosniff` via `.htaccess`.
+- PDF download after submit is limited to the current session’s latest application id.
+- Prefer CSP / HSTS on the host; `.htaccess` sets `X-Content-Type-Options: nosniff`.

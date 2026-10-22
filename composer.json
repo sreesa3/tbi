@@ -1,0 +1,11 @@
+{
+  "name": "ksrf/tbi",
+  "description": "KSRF TBI landing page and incubatee application form",
+  "require": {
+    "php": ">=8.0",
+    "dompdf/dompdf": "^3.0"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
