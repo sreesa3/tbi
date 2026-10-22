@@ -1,16 +1,36 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/app.php';
+require dirname(__DIR__) . '/includes/demo_application.php';
 tbi_start_session();
 $error = $_SESSION['form_error'] ?? '';
 $old = $_SESSION['form_old'] ?? [];
 unset($_SESSION['form_error'], $_SESSION['form_old']);
 $token = tbi_csrf_token();
 
+$demoMode = isset($_GET['demo']) && (string) $_GET['demo'] === '1';
+if ($demoMode && $old === []) {
+    $old = tbi_demo_application();
+}
+
 function old(array $old, string $key, string $default = ''): string
 {
     return tbi_h(isset($old[$key]) ? (string) $old[$key] : $default);
 }
+
+function old_arr(array $old, string $key, int $i, string $default = ''): string
+{
+    if (!isset($old[$key]) || !is_array($old[$key])) {
+        return tbi_h($default);
+    }
+    return tbi_h(isset($old[$key][$i]) ? (string) $old[$key][$i] : $default);
+}
+
+$demoServices = [];
+if (isset($old['services']) && is_array($old['services'])) {
+    $demoServices = $old['services'];
+}
+$agreedChecked = !empty($old['agreed_rules']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,6 +85,12 @@ function old(array $old, string $key, string $default = ''): string
             </p>
           </header>
 
+          <?php if ($demoMode): ?>
+            <p class="note">
+              Demo data is loaded for testing. Edit any field before you submit.
+            </p>
+          <?php endif; ?>
+
           <?php if ($error !== ''): ?>
             <p class="form-alert" role="alert"><?php echo tbi_h($error); ?></p>
           <?php endif; ?>
@@ -113,12 +139,12 @@ function old(array $old, string $key, string $default = ''): string
               <div id="edu-rows" class="repeat-block">
                 <?php for ($i = 0; $i < 2; $i++): ?>
                 <div class="repeat-row">
-                  <label>Class / course <input name="edu_course[]" maxlength="160" /></label>
-                  <label>College / institution <input name="edu_college[]" maxlength="200" /></label>
-                  <label>Branch <input name="edu_branch[]" maxlength="160" /></label>
-                  <label>University / board <input name="edu_board[]" maxlength="160" /></label>
-                  <label>Year of pass <input name="edu_year[]" maxlength="20" /></label>
-                  <label>% secured <input name="edu_percent[]" maxlength="20" /></label>
+                  <label>Class / course <input name="edu_course[]" maxlength="160" value="<?php echo old_arr($old, 'edu_course', $i); ?>" /></label>
+                  <label>College / institution <input name="edu_college[]" maxlength="200" value="<?php echo old_arr($old, 'edu_college', $i); ?>" /></label>
+                  <label>Branch <input name="edu_branch[]" maxlength="160" value="<?php echo old_arr($old, 'edu_branch', $i); ?>" /></label>
+                  <label>University / board <input name="edu_board[]" maxlength="160" value="<?php echo old_arr($old, 'edu_board', $i); ?>" /></label>
+                  <label>Year of pass <input name="edu_year[]" maxlength="20" value="<?php echo old_arr($old, 'edu_year', $i); ?>" /></label>
+                  <label>% secured <input name="edu_percent[]" maxlength="20" value="<?php echo old_arr($old, 'edu_percent', $i); ?>" /></label>
                 </div>
                 <?php endfor; ?>
               </div>
@@ -185,7 +211,8 @@ function old(array $old, string $key, string $default = ''): string
                   'Technology Upgradation (R & D) / Value Addition',
                 ];
                 foreach ($services as $s) {
-                    echo '<label class="check"><input type="checkbox" name="services[]" value="' . tbi_h($s) . '" /> ' . tbi_h($s) . '</label>';
+                    $checked = in_array($s, $demoServices, true) ? ' checked' : '';
+                    echo '<label class="check"><input type="checkbox" name="services[]" value="' . tbi_h($s) . '"' . $checked . ' /> ' . tbi_h($s) . '</label>';
                 }
                 ?>
               </div>
@@ -256,8 +283,8 @@ function old(array $old, string $key, string $default = ''): string
               <div id="cost-rows" class="repeat-block">
                 <?php for ($i = 0; $i < 3; $i++): ?>
                 <div class="repeat-row repeat-row--2">
-                  <label>Item <input name="cost_item[]" maxlength="200" /></label>
-                  <label>Amount (₹) <input name="cost_amount[]" maxlength="40" /></label>
+                  <label>Item <input name="cost_item[]" maxlength="200" value="<?php echo old_arr($old, 'cost_item', $i); ?>" /></label>
+                  <label>Amount (₹) <input name="cost_amount[]" maxlength="40" value="<?php echo old_arr($old, 'cost_amount', $i); ?>" /></label>
                 </div>
                 <?php endfor; ?>
               </div>
@@ -322,7 +349,7 @@ function old(array $old, string $key, string $default = ''): string
                 </ol>
               </details>
               <label class="check check--block">
-                <input type="checkbox" name="agreed_rules" value="1" required />
+                <input type="checkbox" name="agreed_rules" value="1" required<?php echo $agreedChecked ? ' checked' : ''; ?> />
                 I have read the rules and regulations and agree to abide by them. *
               </label>
             </fieldset>
